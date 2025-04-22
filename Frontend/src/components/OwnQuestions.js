@@ -1,0 +1,130 @@
+import axios from 'axios';
+import React, { Component } from 'react';
+import { NavLink } from 'reactstrap';
+import { Link } from 'react-router-dom';
+
+export class OwnQuestions extends Component {
+  static displayName = OwnQuestions.name;
+
+  constructor(props) {
+    super(props);
+    this.state = { questions: [],
+    sortby:"Name",
+  sorttype:"asc",
+limit:"10",
+page:1,
+isNext:true, 
+count:0 };
+    }
+setSortBy(sort)
+{
+  this.setState({sortby:sort})
+}
+
+componentDidMount(){
+  this.getParts(this.state.page)
+}
+
+addProduct(id){
+  this.state.products.push(parseInt(id));
+}
+getParts(page)
+{
+  axios.get(`/questions/myQuestions?s=${localStorage["search"]}&sort_by=${this.state.sortby}&sort_type=${this.state.sorttype}&offset=${page-1}&limit=${this.state.limit}`,{ headers: { "Authorization": `Bearer ${localStorage["token"]}` } })
+  .then(response=>{console.log(response);this.setState({questions:response.data.questions,count:response.data.count})}).then(()=>{
+    this.setState({page:page})
+    if((this.state.count-(this.state.page)*this.state.limit)>0)
+    {
+      this.setState({isNext:true})
+      
+    }
+    else{
+      this.setState({isNext:false})
+    }
+    localStorage.setItem("search","")
+  }).then(()=>{
+    if(this.state.questions.length>0)
+    {
+  document.getElementById('Questions').innerHTML="";
+    }
+  for(var i =0;i<this.state.questions.length;i++)
+  {
+    var name = document.createElement("h3")
+    name.innerText="Назва: "+this.state.questions[i].name
+    var subject = document.createElement("h3")
+    subject.innerText="Предмет: "+this.state.questions[i].subject
+    var theme = document.createElement("h3")
+    theme.innerText="Тема: "+ this.state.questions[i].theme
+
+
+    var question = document.createElement("div");
+    question.append(name,subject,theme)
+    question.setAttribute("class","Question");
+    question.setAttribute("id",`${this.state.questions[i].id}`)
+    question.onclick = (e)=>{
+      if(e.target.localName!=="div")
+      {document.location.href=`/questions/${e.target.parentElement.id}`}
+      else{
+        document.location.href=`/questions/${e.target.id}`
+      }
+  } 
+    document.getElementById('Questions').append(question)
+  }
+})
+}
+setSorttype(sort)
+{
+  this.setState({sorttype:sort})
+}
+
+setLimit(limit)
+{
+  this.setState({limit:limit})
+}
+Next()
+{
+  this.getParts(this.state.page+1)
+  
+}
+Previous()
+{
+  this.getParts(this.state.page-1)
+  
+}
+  
+
+  render () {
+    return (
+      <div>
+        <NavLink tag={Link} className="navigation" to="/myQuestions/add"> Додати питання</NavLink>
+        {this.state.questions.length>0?<div class="MainFrame">
+        <div className="Pagination">
+          <h3>Сортувати по <select onChange={e=>{this.setSortBy(e.target.value)}}>
+            <option value = "Name" >імені</option>
+            <option value="Subject">предмету</option>
+            <option value="Theme">темі</option>
+          </select></h3>
+          <h3>за 
+          <select onChange={e=>{this.setSorttype(e.target.value)}}>
+            <option value = "asc" >зростанням</option>
+            <option value="desc" >спаданням</option>
+          </select></h3>
+         <div className='InputField'>
+          <h3>Кількість на сторінці: <input className="InputField" type="number" min={1}value={this.state.limit} onChange={e=>{this.setLimit(e.target.value)}}placeholder="limit"></input></h3>
+          <br></br>
+          </div>
+          <div className='InputField'>
+          <button className = "filterButton" onClick={e=>{e.preventDefault();this.getParts(1)}}>Застосувати фільтри</button>
+          </div>
+        </div>
+        
+        <div id="Questions">
+        </div>
+        {(this.state.page>1)&&<button className="NavigationButton" onClick={e=>{e.preventDefault();this.Previous()}}>Попередня сторінка</button>}
+        {this.state.isNext&&<button className="NavigationButton" onClick={e=>{e.preventDefault();this.Next()}}>Наступна сторінка</button>}
+        </div>:<div><h1 className="Warning">У вас ще немає питань</h1></div>}
+        
+      </div>
+    );
+  }
+}

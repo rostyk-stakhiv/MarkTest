@@ -1,0 +1,30 @@
+﻿.navbar
+{
+  background-color:#071f3b;
+  width:100%
+}
+.selection{
+  font-size: 18pt;
+  color:white;
+}
+.IsLogin{
+  display:inline-flex;
+  background-color: #071f3b;
+}
+
+.IsLogin button{
+  background-color: rgb(4, 9, 53);
+  color:white;
+  border-radius: 10px;
+  margin-top: 5px;
+  height:40px;
+  width:auto;
+}
+
+.MainLink{
+  Color:white;
+  font-size: xx-large;
+}
+.menu{
+  background-color: #071f3b;
+}
